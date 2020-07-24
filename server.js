@@ -1,6 +1,7 @@
 const express = require('express')
 const bodyParser = require('body-parser')
 const { NlpManager } = require('node-nlp');
+const http = require('http')
 const https = require('https')
 const app = express()
 const port = 4443
@@ -61,6 +62,8 @@ function limitNumberOfActiveClients() {
         readyForMore = true
     }, 60 * 1000)
 }
+
+https.createServer(app).listen(8080)
 
 https.createServer({
     cert: fs.readFileSync('/etc/letsencrypt/live/fancy-chats.com/cert.pem'),
