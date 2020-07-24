@@ -56,11 +56,11 @@ app.get('/process/input/:input/languageCode/:languageCode/clientId/:clientId', a
 function limitNumberOfActiveClients() {
     if (handles.length > 10000) {
         handles.splice(0, 1)
+        readyForMore = false
+        setTimeout(() => {
+            readyForMore = true
+        }, 60 * 1000)
     }
-    readyForMore = false
-    setTimeout(() => {
-        readyForMore = true
-    }, 60 * 1000)
 }
 
 http.createServer(app).listen(8080)
