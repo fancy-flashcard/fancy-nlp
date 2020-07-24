@@ -63,7 +63,7 @@ function limitNumberOfActiveClients() {
     }, 60 * 1000)
 }
 
-https.createServer(app).listen(8080)
+http.createServer(app).listen(8080)
 
 https.createServer({
     cert: fs.readFileSync('/etc/letsencrypt/live/fancy-chats.com/cert.pem'),
