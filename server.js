@@ -6,6 +6,7 @@ const https = require('https')
 const app = express()
 let port = (process.argv[2] === undefined) ? 4443 : process.argv[2]
 const fs = require('fs')
+const path = require('path')
 
 const handles = []
 
@@ -43,7 +44,16 @@ app.post('/train', async (req, res) => {
 
 app.post('/fundclient/clientId/:clientId', async (req, res) => {
 
-    res.send()
+    const fundingsFilePath = path.join(`${__dirname}`, 'operational-data/fundings.json')
+
+    const newFunding = req.body
+    newFunding.id = Date.now().toString()
+
+    const fileContent = JSON.parse(fs.readFileSync(fundingsFilePath, 'utf8'))
+    fileContent.push(newFunding)
+
+    fs.writeFileSync(fundingsFilePath, JSON.stringify(fileContent))
+    res.send(newFunding)
 
 })
 
@@ -55,6 +65,13 @@ app.get('/process/input/:input/languageCode/:languageCode/clientId/:clientId', a
     }
     const nlpResult = await handle.manager.process(req.params.languageCode, req.params.input)
     res.send({ nlpResult })
+})
+
+app.get('/getFundings/clientId/:clientId', async (req, res) => {
+    const fundingsFilePath = path.join(`${__dirname}`, 'operational-data/fundings.json')
+    console.log(``)
+    const fileContent = fs.readFileSync(fundingsFilePath, 'utf8')
+    res.send(fileContent)
 })
 
 
