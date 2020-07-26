@@ -11,6 +11,7 @@ const path = require('path')
 const handles = []
 
 const balancesFilePath = path.join(`${__dirname}`, 'operational-data/balances.json')
+const messagesFilePath = path.join(`${__dirname}`, 'operational-data/messages.json')
 let readyForMore = true
 
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -79,11 +80,42 @@ app.get('/process/input/:input/languageCode/:languageCode/clientId/:clientId', a
         res.send(`Are you sure you submitted a valid clientId?: ${req.params.clientId} - try training again and save the return value`)
     }
     const nlpResult = await handle.manager.process(req.params.languageCode, req.params.input)
+
+    const message = {
+        clientId: req.params.clientId,
+        timeStamp: Date.now().toString(),
+        languageCode: req.params.languageCode,
+        input: req.params.input,
+        output: nlpResult.answer
+    }
+
+    const messages = JSON.parse(fs.readFileSync(messagesFilePath, 'utf-8'))
+    messages.push(message)
+    fs.writeFileSync(messagesFilePath, JSON.stringify(messages))
+
+
+    const balances = JSON.parse(fs.readFileSync(balancesFilePath, 'utf8'))
+    const theOne = balances.filter((e) => e.clientId === req.params.clientId)[0]
+    theOne.balanceInEuro = Number(theOne.balanceInEuro) - 0.01
+
+    const index = balances.indexOf(theOne)
+    balances.splice(index, 1)
+    balances.push(theOne)
+
+    console.log(theOne)
+    console.log(balances)
+    fs.writeFileSync(balancesFilePath, JSON.stringify(balances))
+
     res.send({ nlpResult })
 })
 
 app.get('/getBalance/clientId/:clientId', async (req, res) => {
     const fileContent = fs.readFileSync(balancesFilePath, 'utf8')
+    res.send(fileContent)
+})
+
+app.get('/getMessages/clientId/:clientId', async (req, res) => {
+    const fileContent = fs.readFileSync(messagesFilePath, 'utf8')
     res.send(fileContent)
 })
 
