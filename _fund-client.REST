@@ -1,0 +1,9 @@
+
+POST http://localhost:4443/fundclient/clientId/1595612098416 HTTP/1.1
+content-type: application/json
+
+{
+    "id": "will be filled by backend",
+    "amountInEuro": "3",
+    "status": "will be filled by backend"
+}

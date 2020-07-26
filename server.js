@@ -4,7 +4,7 @@ const { NlpManager } = require('node-nlp');
 const http = require('http')
 const https = require('https')
 const app = express()
-const port = 4443
+let port = (process.argv[2] === undefined) ? 4443 : process.argv[2]
 const fs = require('fs')
 
 const handles = []
@@ -41,6 +41,11 @@ app.post('/train', async (req, res) => {
     }
 })
 
+app.post('/fundclient/clientId/:clientId', async (req, res) => {
+
+    res.send()
+
+})
 
 app.get('/process/input/:input/languageCode/:languageCode/clientId/:clientId', async (req, res) => {
 
@@ -54,7 +59,7 @@ app.get('/process/input/:input/languageCode/:languageCode/clientId/:clientId', a
 
 
 function limitNumberOfActiveClients() {
-    if (handles.length > 10000) {
+    if (handles.length > 100) {
         handles.splice(0, 1)
         readyForMore = false
         setTimeout(() => {
@@ -63,11 +68,15 @@ function limitNumberOfActiveClients() {
     }
 }
 
-http.createServer(app).listen(8080)
+if (port === 4443) {
+    https.createServer({
+        cert: fs.readFileSync('/etc/letsencrypt/live/fancy-chats.com/fullchain.pem'),
+        key: fs.readFileSync('/etc/letsencrypt/live/fancy-chats.com/privkey.pem')
+    }, app).listen(port)
 
-https.createServer({
-    cert: fs.readFileSync('/etc/letsencrypt/live/fancy-chats.com/fullchain.pem'),
-    key: fs.readFileSync('/etc/letsencrypt/live/fancy-chats.com/privkey.pem')
-}, app).listen(port)
+} else {
+    http.createServer(app).listen(port)
+}
+
 
 
