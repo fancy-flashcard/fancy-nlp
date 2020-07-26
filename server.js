@@ -61,14 +61,15 @@ app.post('/fundclient/clientId/:clientId', async (req, res) => {
 
     const balances = JSON.parse(fs.readFileSync(balancesFilePath, 'utf8'))
     const theOne = balances.filter((e) => e.clientId === req.params.clientId)[0]
+    theOne.balance = theOne.balance + newFunding.amountInEuro
     theOne.fundings.push(newFunding)
+
     const index = balances.indexOf(theOne)
     balances.splice(index, 1)
     balances.push(theOne)
 
     fs.writeFileSync(balancesFilePath, JSON.stringify(balances))
     res.send(newFunding)
-
 })
 
 app.get('/process/input/:input/languageCode/:languageCode/clientId/:clientId', async (req, res) => {
