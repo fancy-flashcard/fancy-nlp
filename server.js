@@ -10,6 +10,7 @@ const path = require('path')
 
 const handles = []
 
+const balancesFilePath = path.join(`${__dirname}`, 'operational-data/balances.json')
 let readyForMore = true
 
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -34,9 +35,20 @@ app.post('/train', async (req, res) => {
 
         handles.push(handle)
 
-        res.send({ clientId: handle.clientId })
+        const newBalance = {
+            clientId: handle.clientId,
+            balanceInEuro: 0,
+            fundings: []
+        }
+
+        const balances = JSON.parse(fs.readFileSync(balancesFilePath, 'utf-8'))
+        balances.push(newBalance)
+        fs.writeFileSync(balancesFilePath, JSON.stringify(balances))
 
         limitNumberOfActiveClients() // shall be optimized soon
+
+        res.send({ clientId: handle.clientId })
+
     } else {
         res.send('give me a break')
     }
@@ -44,15 +56,17 @@ app.post('/train', async (req, res) => {
 
 app.post('/fundclient/clientId/:clientId', async (req, res) => {
 
-    const fundingsFilePath = path.join(`${__dirname}`, 'operational-data/fundings.json')
-
     const newFunding = req.body
     newFunding.id = Date.now().toString()
 
-    const fileContent = JSON.parse(fs.readFileSync(fundingsFilePath, 'utf8'))
-    fileContent.push(newFunding)
+    const balances = JSON.parse(fs.readFileSync(balancesFilePath, 'utf8'))
+    const theOne = balances.filter((e) => e.clientId === req.params.clientId)[0]
+    theOne.fundings.push(newFunding)
+    const index = balances.indexOf(theOne)
+    balances.splice(index, 1)
+    balances.push(theOne)
 
-    fs.writeFileSync(fundingsFilePath, JSON.stringify(fileContent))
+    fs.writeFileSync(balancesFilePath, JSON.stringify(balances))
     res.send(newFunding)
 
 })
@@ -67,10 +81,8 @@ app.get('/process/input/:input/languageCode/:languageCode/clientId/:clientId', a
     res.send({ nlpResult })
 })
 
-app.get('/getFundings/clientId/:clientId', async (req, res) => {
-    const fundingsFilePath = path.join(`${__dirname}`, 'operational-data/fundings.json')
-    console.log(``)
-    const fileContent = fs.readFileSync(fundingsFilePath, 'utf8')
+app.get('/getBalance/clientId/:clientId', async (req, res) => {
+    const fileContent = fs.readFileSync(balancesFilePath, 'utf8')
     res.send(fileContent)
 })
 
