@@ -1,3 +1,3 @@
 
 
-GET http://localhost:3010/getMessages/clientId/1599230773567
+GET http://localhost:3010/getMessages/clientId/123

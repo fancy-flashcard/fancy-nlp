@@ -20,7 +20,7 @@ app.post('/train', async (req, res) => {
 
     if (readyForMore) {
         const handle = {
-            clientId: Date.now().toString(),
+            clientId: (req.body.wallet === undefined) ? Date.now().toString() : req.body.wallet,
             manager: new NlpManager({ languages: req.body.languageCodes })
         }
 
