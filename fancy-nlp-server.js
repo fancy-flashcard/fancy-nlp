@@ -7,12 +7,14 @@ const app = express()
 let port = (process.argv[2] === undefined) ? 4443 : process.argv[2]
 const fs = require('fs')
 const path = require('path')
+var cors = require('cors')
 
 const handles = []
 
 const messagesFilePath = path.join(`${__dirname}`, 'operational-data/messages.json')
 let readyForMore = true
 
+app.use(cors())
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
